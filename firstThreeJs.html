@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"?
+  <title>First Threejs Practice</title>
+</head>
+<body>
+  <script src="threejs/three.min.js"></script>
+  <script src="threejs/OrbitControls.js"></script>
+</body>
+<script>
+var scene, camera, renderer, controls;
+
+init();
+display();
+
+function init(){
+
+  //create scene
+  scene = new THREE.Scene();
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+
+  createRenderer(width, height, true);
+
+  createCamera(width, height);
+
+  window.addEventListener('resize', resizeFunc);
+
+  AddLighting();
+
+  //LoadModel("models/treehouse_logo.js");
+  drawGeometry();
+  drawSquare(3,5,7,9);
+
+  //add controls
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
+}
+
+function display(){
+  requestAnimationFrame(display);
+
+  renderer.render(scene, camera);
+  controls.update();
+}
+
+function createRenderer(width, height, useWebgl){
+  //create renderer
+  if(useWebgl == true)
+    renderer = new THREE.WebGLRenderer({antialias:true});
+  else
+    renderer = new THREE.CanvasRenderer();
+
+  renderer.setSize(width, height);
+  renderer.setClearColor(0x333F47);
+  document.body.appendChild(renderer.domElement);
+}
+
+function createCamera(width, height){
+  //create camera
+  camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 4000)
+  camera.position.set(0, 0, 30);
+  camera.up.x = 0;
+  camera.up.y = 1;
+  camera.up.z = 1;
+  camera.lookAt(new THREE.Vector3(3, 3, 10));
+  scene.add(camera);
+}
+
+function resizeFunc(){
+  var width = window.innerWidth,
+      height = window.innerHeight;
+
+  renderer.setSize(width, height);
+  camera.aspect = width/height;
+  camera.updateProjectionMatrix();
+}
+
+function AddLighting(){
+  var light = new THREE.PointLight(0xffffff);
+  light.position.set(-100,200,100);
+  scene.add(light);
+}
+
+function LoadModel(path){
+    var loader = new THREE.JSONLoader();
+    loader.load(path, function(geometry){
+      var material = new THREE.MeshLambertMaterial({color: 0x55B663});
+      mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+    });
+}
+
+function drawGeometry(){
+  var triangleGeometry = new THREE.Geometry();
+
+  triangleGeometry.vertices.push(new THREE.Vector3(1,1,0));
+  triangleGeometry.vertices.push(new THREE.Vector3(3,1,0));
+  triangleGeometry.vertices.push(new THREE.Vector3(3,3,0));
+
+  triangleGeometry.faces.push( new THREE.Face3(0,1,2));
+
+  var basicMaterial = new THREE.MeshBasicMaterial({
+    color: 0x2685AA,
+    side: THREE.DoubleSide
+  });
+
+  var triangleMesh = new THREE.Mesh(triangleGeometry, basicMaterial);
+  scene.add(triangleMesh);
+}
+
+function drawSquare(x1,y1,x2,y2){
+  var square = new THREE.Geometry();
+	// Your code goes here
+  square.vertices.push(new THREE.Vector3(x1,y1,0));
+  square.vertices.push(new THREE.Vector3(x2,y1,0));
+  square.vertices.push(new THREE.Vector3(x2,y2,0));
+  square.vertices.push(new THREE.Vector3(x1,y2,0));
+
+  square.faces.push(new THREE.Face3(0,1,2));
+  square.faces.push(new THREE.Face3(2,3,0));
+
+  var basicMaterial = new THREE.MeshBasicMaterial({
+    color: 0x038502,
+    wireframe: true,
+    side: THREE.DoubleSide
+  });
+
+  var squareMesh = new THREE.Mesh(square, basicMaterial);
+  scene.add(squareMesh);
+}
+
+
+</script>
+</html>
