@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8"?
+  <meta charset="UTF-8"/>
   <title>First Threejs Practice</title>
 </head>
 <body>
   <script src="threejs/three.min.js"></script>
+  <script src="threejs/OBJLoader.js"></script>
   <script src="threejs/OrbitControls.js"></script>
 </body>
 <script>
@@ -29,9 +30,13 @@ function init(){
 
   AddLighting();
 
-  //LoadModel("models/treehouse_logo.js");
-  drawGeometry();
-  drawSquare(3,5,7,9);
+  UseAxis(10);
+  //LoadModel("models/KobeFusedTextureless.json");
+  //LoadJSONModel("models/KobeFused.json", "models/KbSimplified.png");
+  LoadObjModel("models/KbSimplified.obj", "models/KbSimplified.png");
+  //LoadJSONModel("./models/marmelab.json");
+  //drawGeometry();
+  //drawSquare(3,5,7,9);
 
   //add controls
   controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -47,7 +52,7 @@ function display(){
 function createRenderer(width, height, useWebgl){
   //create renderer
   if(useWebgl == true)
-    renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer = new THREE.WebGLRenderer({antialias:true, alpha: true});
   else
     renderer = new THREE.CanvasRenderer();
 
@@ -59,11 +64,9 @@ function createRenderer(width, height, useWebgl){
 function createCamera(width, height){
   //create camera
   camera = new THREE.PerspectiveCamera(45, width/height, 0.1, 4000)
-  camera.position.set(0, 0, 30);
-  camera.up.x = 0;
-  camera.up.y = 1;
-  camera.up.z = 1;
-  camera.lookAt(new THREE.Vector3(3, 3, 10));
+  camera.position.set(0, 10, 50);
+  camera.up.set(0,1,0);
+  camera.lookAt(new THREE.Vector3(0, 10, 0));
   scene.add(camera);
 }
 
@@ -80,23 +83,56 @@ function AddLighting(){
   var light = new THREE.PointLight(0xffffff);
   light.position.set(-100,200,100);
   scene.add(light);
+
+  var ambientLight = new THREE.AmbientLight(0xBBBBBB);
+  scene.add(ambientLight);
 }
 
-function LoadModel(path){
+function OnProgress( xhr ){
+	if ( xhr.lengthComputable ) {
+		var percentComplete = xhr.loaded / xhr.total * 100;
+		console.log( Math.round(percentComplete, 2) + '% downloaded' );
+	}
+}
+
+function OnError(xhr){
+
+}
+
+
+function LoadJSONModel(path, texture){
     var loader = new THREE.JSONLoader();
+
     loader.load(path, function(geometry){
-      var material = new THREE.MeshLambertMaterial({color: 0x55B663});
-      mesh = new THREE.Mesh(geometry, material);
+      tex = THREE.ImageUtils.loadTexture(texture);
+      var material = new THREE.MeshPhongMaterial( {map: tex});
+      var mesh = new THREE.Mesh(geometry, material);
+
+      mesh.scale.set(1,1,1);
       scene.add(mesh);
-    });
+    }, OnProgress, OnError);
+}
+
+function LoadObjModel(path, texture){
+  tex = THREE.ImageUtils.loadTexture(texture);
+
+  var loader = new THREE.OBJLoader();
+  loader.load( path, function(object) {
+    object.traverse( function ( child ) {
+						if ( child instanceof THREE.Mesh ) {
+							child.material.map = tex;
+						}
+					} );
+    scene.add( object );
+  }, OnProgress, OnError);
 }
 
 function drawGeometry(){
   var triangleGeometry = new THREE.Geometry();
 
-  triangleGeometry.vertices.push(new THREE.Vector3(1,1,0));
-  triangleGeometry.vertices.push(new THREE.Vector3(3,1,0));
-  triangleGeometry.vertices.push(new THREE.Vector3(3,3,0));
+  triangleGeometry.vertices.push(new THREE.Vector3(0,17,0));
+  triangleGeometry.vertices.push(new THREE.Vector3(3,0,0));
+  triangleGeometry.vertices.push(new THREE.Vector3(-3,0,0));
 
   triangleGeometry.faces.push( new THREE.Face3(0,1,2));
 
@@ -128,6 +164,12 @@ function drawSquare(x1,y1,x2,y2){
 
   var squareMesh = new THREE.Mesh(square, basicMaterial);
   scene.add(squareMesh);
+}
+
+function UseAxis(size)
+{
+  var axisHelper = new THREE.AxisHelper(size);
+  scene.add(axisHelper);
 }
 
 
